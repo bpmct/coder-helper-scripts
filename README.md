@@ -7,8 +7,8 @@ Some basic helper scripts I use to manage https://ben.cdr.dev (a VM)
 - Create abirtary DB backups
 - Restore to an arbitary DB backup
 - Upgrade to latest version (and run backup priorr)
-- Upgrade to an un-released build artifact (and backup prior)
-- Downgrade to a version (and restore from a backuo)
+- Upgrade to an un-released build artifact (and run backup prior)
+- Downgrade to a version (and restore from a backup)
 
 ## Requirements
 
