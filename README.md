@@ -15,3 +15,4 @@ Some basic helper scripts I use to manage https://ben.cdr.dev (a VM)
 - `gh` CLI is installed and authenticated
 - `$CODER_HELPERS_WORKSPACE` is set to the dir of your workspace (e.g. `/home/coder/coder-helper-scripts`)
 - You are running Coder as a system service on a Debian or Ubuntu VM
+- Currently only works for built-in DB
