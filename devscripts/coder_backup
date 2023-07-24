@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Make backups dir, if it doesn't exist
+mkdir -p $CODER_HELPERS_WORKSPACE/backups
+
+# Ask for a name for the backup
+if [ -z "${BACKUP_NAME}" ]; then
+    echo "Please enter a name for the backup: "
+    read BACKUP_NAME
+fi
+
+echo "Backing up (name: $BACKUP_NAME)"
+
+# Form the filename, appending the current date
+filename="${BACKUP_NAME}-$(date +%Y-%m-%d)-pre-restore.sql"
+
+pg_dump $(coder server postgres-builtin-url --raw-url) > $CODER_HELPERS_WORKSPACE/backups/$filename
+
+echo "Backup saved as $filename in the $CODER_HELPERS_WORKSPACE/backups/ directory."

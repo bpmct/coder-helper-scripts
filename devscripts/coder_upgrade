@@ -1,0 +1,14 @@
+#!/bin/sh
+
+filename=$(coder version -o json | jq -r '.version' | sed 's/+.*//')"-pre-upgrade.sql"
+
+# Check if file exists and modify filename if it does
+if [ -e $CODER_HELPERS_WORKSPACE/backups/$filename ]; then
+    filename="1_$filename"
+fi
+
+pg_dump $(coder server postgres-builtin-url --raw-url) > $CODER_HELPERS_WORKSPACE/backups/$filename
+
+curl -L https://coder.com/install.sh | sh
+sudo systemctl daemon-reload
+sudo systemctl restart coder

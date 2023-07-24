@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# List available backups
+echo "Available backups:"
+ls $CODER_HELPERS_WORKSPACE/backups/
+
+# Ask for the name of the backup to restore
+echo "Please enter the name of the backup to restore: "
+read BACKUP_NAME
+
+# Check if file exists in the backups folder
+if [ ! -f "$CODER_HELPERS_WORKSPACE/backups/$BACKUP_NAME" ]; then
+  echo "Backup file $BACKUP_NAME does not exist."
+  exit 1
+fi
+
+# Clear the 'coder' database
+echo "Clearing coder database..."
+PGPASSWORD=$(echo $(coder server postgres-builtin-url --raw-url) | sed -n -e 's/^.*password=\(.*\)$/\1/p') psql -U coder -h localhost -p 42753 -d coder -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+# Restore the 'coder' database
+echo "Restoring database from $BACKUP_NAME..."
+PGPASSWORD=$(echo $(coder server postgres-builtin-url --raw-url) | sed -n -e 's/^.*password=\(.*\)$/\1/p') psql -U coder -h localhost -p 42753 -d coder < $CODER_HELPERS_WORKSPACE/backups/$BACKUP_NAME
+
+echo "Restore complete."

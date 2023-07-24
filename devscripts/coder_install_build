@@ -1,0 +1,23 @@
+#!/bin/sh
+
+echo "Enter a run ID (inspect URL from one of these: https://github.com/coder/coder/actions/workflows/ci.yaml?query=branch%3Amain+): "
+read BUILD_ID
+
+echo "Enter a build name. Avoid spaces (e.g. \"role-sync\"): "
+read BUILD_NAME
+
+# Force a backup
+BACKUP_NAME=$BUILD_NAME $CODER_HELPERS_WORKSPACE/devscripts/coder_backup
+
+git fetch && git pull
+mkdir -p $CODER_HELPERS_WORKSPACE/builds/$BUILD_NAME
+echo "Downloading artifacts..."
+gh run download $BUILD_ID --dir $CODER_HELPERS_WORKSPACE/builds/$BUILD_NAME --repo coder/coder
+mv $CODER_HELPERS_WORKSPACE/builds/$BUILD_NAME/coder/* $CODER_HELPERS_WORKSPACE/builds/$BUILD_NAME
+rm $CODER_HELPERS_WORKSPACE/builds/$BUILD_NAME/coder/
+cd $CODER_HELPERS_WORKSPACE/builds/$BUILD_NAME
+
+echo "Installing package"
+sudo dpkg -i coder_*_linux_amd64.deb 
+sudo systemctl daemon-reload
+sudo systemctl restart coder

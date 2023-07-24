@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# If no version passed as argument, ask for it and list available backups
+if [ -z "$1" ]
+then
+  echo "Available backups:"
+  ls $CODER_HELPERS_WORKSPACE/backups/
+  echo "Please enter a version (e.g. v0.21.1): "
+  read VERSION
+else
+  VERSION="$1"
+fi
+
+# Form the filename
+filename="${VERSION}-pre-upgrade.sql"
+
+# Check if file exists in the backups folder
+if [ ! -f "$CODER_HELPERS_WORKSPACE/backups/$filename" ]; then
+  echo "Warning: Backup file $filename does not exist."
+  echo "Would you like to proceed? (Y/N): "
+  read proceed
+  if [[ $proceed != [Yy] ]]; then
+    exit 1
+  fi
+fi
+
+# Clear the 'coder' database
+echo "Clearing coder database..."
+PGPASSWORD=$(echo $(coder server postgres-builtin-url --raw-url) | sed -n -e 's/^.*password=\(.*\)$/\1/p') psql -U coder -h localhost -p 42753 -d coder -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+# Restore the 'coder' database
+echo "Restoring database from $filename..."
+PGPASSWORD=$(echo $(coder server postgres-builtin-url --raw-url) | sed -n -e 's/^.*password=\(.*\)$/\1/p') psql -U coder -h localhost -p 42753 -d coder < $CODER_HELPERS_WORKSPACE/backups/$filename
+
+# Strip 'v' from the version for Coder installation
+CODERVERSION=${VERSION#v}
+
+# Install the specifieda version of Coder
+echo "Installing Coder version $CODERVERSION..."
+curl -L https://coder.com/install.sh | sh -s -- --version=$CODERVERSION
+
+echo "Done."
